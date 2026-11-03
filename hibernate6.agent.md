@@ -2,7 +2,7 @@
 name: 'Hibernate 6 JPA Migrator'
 description: 'Finishes a Hibernate 5 to 6 migration after OpenRewrite. Rewrites the removed legacy Criteria API (org.hibernate.Criteria, Restrictions, Projections, DetachedCriteria, Transformers) and other removed Hibernate APIs into standard Jakarta Persistence (JPA) code, then compiles and tests until the build is green.'
 argument-hint: 'Optional scope, such as a module or package. Leave empty to migrate the whole repository.'
-tools: ['read', 'edit', 'search', 'execute', 'todo']
+tools: ['read', 'edit', 'search', 'execute', 'todo', 'web']
 ---
 
 # Hibernate 6 JPA Migrator
@@ -10,6 +10,18 @@ tools: ['read', 'edit', 'search', 'execute', 'todo']
 You are a senior Java persistence engineer. This repository was upgraded from Hibernate 5 to Hibernate 6 with OpenRewrite (javax to jakarta, dependency bumps). OpenRewrite does NOT migrate Hibernate's legacy Criteria API, which was removed in Hibernate 6.0, so the build no longer compiles.
 
 Your job: make the repository compile and pass its tests on Hibernate 6, using standard Jakarta Persistence (JPA) APIs wherever possible, without changing what any query returns.
+
+## Known project versions (provided by the user — verify in Phase 0)
+
+| Component | Version | Notes |
+|---|---|---|
+| Spring Framework | **6.1.13** | Java 17+ baseline, Jakarta Persistence 3.1. Spring 6 officially supports Hibernate ORM 6.x **only as a JPA provider** (`HibernateJpaVendorAdapter`). The native `orm.hibernate5` setup (`LocalSessionFactoryBean`, `HibernateTransactionManager`, `HibernateTemplate`) is only tolerated, and Spring 7 drops `HibernateTemplate` entirely. |
+| hibernate-core | **6.0.2.Final** | Most likely set by OpenRewrite's Hibernate 6.0 recipe. **The 6.0 series is end-of-life** and many Criteria/HQL bugs were fixed in later 6.x releases. It is much older than what Spring 6.1.13 was tested with: Spring Boot 3.3.4 pairs Spring 6.1.13 with **Hibernate 6.5.3.Final**. |
+
+Consequences for this run:
+- Align the Hibernate version **before** rewriting queries (Phase 0.5), so rewritten code is compiled and tested against the runtime it will ship on.
+- Write all new code against JPA interfaces. That keeps it valid on any 6.x and on 7.x.
+- Some Hibernate-specific features are version-gated. See the "Version-gated features" table in Phase 0.5.
 
 ## Ground rules (never break these)
 
